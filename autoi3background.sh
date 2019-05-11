@@ -11,7 +11,7 @@ error () {
 }
 
 usage () {
-    printf "\033[1mUSAGE:\033[0m $0 \033[4mpath/to/wallpaper.png\033[0m\n"
+    printf "\033[1mUSAGE:\033[0m $0 [-h | --help] \033[4mpath/to/wallpaper.png\033[0m\n"
 }
 
 # Check for arguments
@@ -20,6 +20,13 @@ then
     error "Too few arguments"
     usage
     exit 1
+fi
+
+# Check for -h / --help
+if [[ "$1" == "-h" || "$1" == "--help" ]]
+then
+    usage
+    exit 0
 fi
 
 # Check if provided wallpaper exists

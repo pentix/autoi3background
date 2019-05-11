@@ -55,6 +55,37 @@ b=$(echo $c | cut -f3 -d,)
 # value between 0 and 255
 luminance=$(bc <<< "0.299*$r + 0.587*$g + 0.114*$b")
 
+#if inv arg is on, invert the title colors
+if [ $2 == 'inv' ]; then
+	# invert background
+	r=$(bc <<< "255 - $r")
+	g=$(bc <<< "255 - $g")
+	b=$(bc <<< "255 - $b")
+
+	# if contrasts shouldn't be too big, 
+	# after inverting colors, change luminance by a changing bg_factor appropriately
+	if (( $(echo "$luminance > 127.5"|bc -l) )); then
+		# background is bright
+		bg_factor="1.1"	
+	else
+		# background is dark
+		bg_factor="0.9"
+	fi
+
+	# update colors
+	r=$(bc <<< "($r*$bg_factor)")
+	g=$(bc <<< "($g*$bg_factor)")
+	b=$(bc <<< "($b*$bg_factor)")
+
+	# round to integer
+	r=$(bc <<< " ( $r + 0.5 )/1")
+	g=$(bc <<< " ( $g + 0.5 )/1")
+	b=$(bc <<< " ( $b + 0.5 )/1")
+fi
+
+
+luminance=$(bc <<< "0.299*$r + 0.587*$g + 0.114*$b")
+
 if (( $(echo "$luminance > 127.5" |bc -l) )); then
 	# make text font 70% darker
 	text_factor="0.3"

@@ -11,11 +11,49 @@ r=$(echo $c | cut -f1 -d,)
 g=$(echo $c | cut -f2 -d,)
 b=$(echo $c | cut -f3 -d,)
 
+# value between 0 and 255
+luminance=$(bc <<< "0.299*$r + 0.587*$g + 0.114*$b")
+
+if (( $(echo "$luminance > 127.5" |bc -l) )); then
+	# make text font 70% darker
+	text_factor="0.3"
+else 
+	#make text font 70% brighter
+	text_factor="1.7"
+fi
+
+# update font colors rgb.
+tc_r=$(bc <<< "($r*$text_factor)")
+tc_g=$(bc <<< "($g*$text_factor)")
+tc_b=$(bc <<< "($b*$text_factor)")
+
+# round & convert to int
+tc_r=$(bc <<< " ( $tc_r + 0.5 )/1")
+tc_g=$(bc <<< " ( $tc_g + 0.5 )/1")
+tc_b=$(bc <<< " ( $tc_b + 0.5 )/1")
+
+# update to an allowed value if overflow
+# note that an underflow isn't possible
+if (( $(echo "$tc_r > 255"|bc -l) )); then 
+	tc_r="255" 
+fi
+
+if (( $(echo "$tc_g > 255"|bc -l) )); then 
+	tc_g="255" 
+fi
+
+if (( $(echo "$tc_b > 255"|bc -l) )); then 
+	tc_b="255" 
+fi
+
+#hex value of average
 average=$(printf "#%02x%02x%02x\n" $r $g $b)
-new_conf_line_str="client.focused $average $average"
+text_average=$(printf "#%02x%02x%02x\n" $tc_r $tc_g $tc_b)
+
+new_conf_line_str="client.focused $average $average $text_average"
 
 current_setting=$(grep -P "^client.focused " ~/.config/i3/config)
-conf_line_str="client.focused "$(echo "$current_setting" | cut -f2 -d' ')" "$(echo "$current_setting" | cut -f3 -d' ')
+conf_line_str="client.focused "$(echo "$current_setting" | cut -f2 -d' ')" "$(echo "$current_setting" | cut -f3 -d' ')" "$(echo "$current_setting" | cut -f4 -d' ')
 
 echo "Current setting:         " $(echo $conf_line_str)
 echo "Suggested new setting:   " $(echo $new_conf_line_str)

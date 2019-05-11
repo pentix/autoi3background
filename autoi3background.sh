@@ -40,7 +40,7 @@ fi
 
 
 # Do color magic 
-c=$(convert $1 -resize 1x1\! -format "%[fx:int(255*r+.5)],%[fx:int(255*g+.5)],%[fx:int(255*b+.5)]" info:-)
+c=$(convert "$1" -resize 1x1\! -format "%[fx:int(255*r+.5)],%[fx:int(255*g+.5)],%[fx:int(255*b+.5)]" info:-)
 r=$(echo $c | cut -f1 -d,)
 g=$(echo $c | cut -f2 -d,)
 b=$(echo $c | cut -f3 -d,)

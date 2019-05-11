@@ -6,6 +6,40 @@ success () {
     printf "\033[0;32m$1\033[0m\n"
 }
 
+error () {
+    printf "\033[0;31mError: $1\033[0m\n"
+}
+
+usage () {
+    printf "\033[1mUSAGE:\033[0m $0 \033[4mpath/to/wallpaper.png\033[0m\n"
+}
+
+# Check for arguments
+if (( $# < 1 ))
+then
+    error "Too few arguments"
+    usage
+    exit 1
+fi
+
+# Check if provided wallpaper exists
+test -e "$1"
+if [[ $? != 0 ]]
+then
+    error "File '$1' does not exist"
+    exit 1
+fi
+
+# Check if i3 config exists
+test -e ~/.config/i3/config
+if [[ $? != 0 ]]
+then
+    error "i3 config seems to missing!"
+    exit 1
+fi
+
+
+# Do color magic 
 c=$(convert $1 -resize 1x1\! -format "%[fx:int(255*r+.5)],%[fx:int(255*g+.5)],%[fx:int(255*b+.5)]" info:-)
 r=$(echo $c | cut -f1 -d,)
 g=$(echo $c | cut -f2 -d,)

@@ -11,7 +11,11 @@ error () {
 }
 
 usage () {
-    printf "\033[1mUSAGE:\033[0m $0 [-h | --help] \033[4mpath/to/wallpaper.png\033[0m\n"
+    printf "\033[1mUSAGE:\033[0m $0 [OPTIONS] \033[4mpath/to/wallpaper.png\033[0m\n\n"
+    printf "\033[1mOPTIONS:\033[0m\n\t"
+    printf -- "-h  | --help      Print possible program flags and parameters\n\t"
+    printf -- "-i  | --invert    Invert the calculated colors (matches better for some themes)\n\n"
+    
 }
 
 # Check for arguments
@@ -22,18 +26,51 @@ then
     exit 1
 fi
 
-# Check for -h / --help
-if [[ "$1" == "-h" || "$1" == "--help" ]]
+# argument defaults
+help=0
+invert=0
+wallpaper=""
+
+# Parse arguments
+for arg in $@
+do
+    if [[ "$arg" == "-h" || "$arg" == "--help" ]]
+    then
+	help=1
+	continue
+    fi
+
+    if [[ "$arg" == "-i" || "$arg" == "--invert" ]]
+    then
+	invert=1
+	continue
+    fi
+    
+    # else assume this is the wallpaper
+    wallpaper="$arg"
+done
+
+if [[ "$wallpaper" == "" ]]
+then
+    error "You need to specify the wallpaper!"
+    exit 1
+fi
+
+# ---- End of argument parsing ----
+
+
+
+if [[ $help == 1 ]]
 then
     usage
     exit 0
 fi
 
 # Check if provided wallpaper exists
-test -e "$1"
+test -e "$wallpaper"
 if [[ $? != 0 ]]
 then
-    error "File '$1' does not exist"
+    error "File '$wallpaper' does not exist"
     exit 1
 fi
 
@@ -47,7 +84,7 @@ fi
 
 
 # Do color magic 
-c=$(convert "$1" -resize 1x1\! -format "%[fx:int(255*r+.5)],%[fx:int(255*g+.5)],%[fx:int(255*b+.5)]" info:-)
+c=$(convert "$wallpaper" -resize 1x1\! -format "%[fx:int(255*r+.5)],%[fx:int(255*g+.5)],%[fx:int(255*b+.5)]" info:-)
 r=$(echo $c | cut -f1 -d,)
 g=$(echo $c | cut -f2 -d,)
 b=$(echo $c | cut -f3 -d,)
@@ -56,31 +93,32 @@ b=$(echo $c | cut -f3 -d,)
 luminance=$(bc <<< "0.299*$r + 0.587*$g + 0.114*$b")
 
 #if inv arg is on, invert the title colors
-if [ $2 == 'inv' ]; then
-	# invert background
-	r=$(bc <<< "255 - $r")
-	g=$(bc <<< "255 - $g")
-	b=$(bc <<< "255 - $b")
+if [[ $invert == 1 ]]
+then
+    # invert background
+    r=$(bc <<< "255 - $r")
+    g=$(bc <<< "255 - $g")
+    b=$(bc <<< "255 - $b")
 
-	# if contrasts shouldn't be too big, 
-	# after inverting colors, change luminance by a changing bg_factor appropriately
-	if (( $(echo "$luminance > 127.5"|bc -l) )); then
-		# background is bright
-		bg_factor="1.1"	
-	else
-		# background is dark
-		bg_factor="0.9"
-	fi
+    # if contrasts shouldn't be too big, 
+    # after inverting colors, change luminance by a changing bg_factor appropriately
+    if (( $(echo "$luminance > 127.5"|bc -l) )); then
+	    # background is bright
+	    bg_factor="1.1"	
+    else
+	    # background is dark
+	    bg_factor="0.9"
+    fi
 
-	# update colors
-	r=$(bc <<< "($r*$bg_factor)")
-	g=$(bc <<< "($g*$bg_factor)")
-	b=$(bc <<< "($b*$bg_factor)")
+    # update colors
+    r=$(bc <<< "($r*$bg_factor)")
+    g=$(bc <<< "($g*$bg_factor)")
+    b=$(bc <<< "($b*$bg_factor)")
 
-	# round to integer
-	r=$(bc <<< " ( $r + 0.5 )/1")
-	g=$(bc <<< " ( $g + 0.5 )/1")
-	b=$(bc <<< " ( $b + 0.5 )/1")
+    # round to integer
+    r=$(bc <<< " ( $r + 0.5 )/1")
+    g=$(bc <<< " ( $g + 0.5 )/1")
+    b=$(bc <<< " ( $b + 0.5 )/1")
 fi
 
 

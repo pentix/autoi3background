@@ -157,16 +157,16 @@ if (( $(echo "$tc_b > 255"|bc -l) )); then
 fi
 
 #hex value of average
-average=$(printf "#%02x%02x%02x\n" $r $g $b)
+focused_average=$(printf "#%02x%02x%02x\n" $r $g $b)
 text_average=$(printf "#%02x%02x%02x\n" $tc_r $tc_g $tc_b)
 
-new_conf_line_str="client.focused $average $average $text_average"
+focused_new_conf_line_str="client.focused $focused_average $focused_average $text_average"
+focused_current_setting=$(grep -P "^client.focused " ~/.config/i3/config)
+focused_conf_line_str="client.focused "$(echo "$focused_current_setting" | cut -f2 -d' ')" "$(echo "$focused_current_setting" | cut -f3 -d' ')" "$(echo "$focused_current_setting" | cut -f4 -d' ')
 
-current_setting=$(grep -P "^client.focused " ~/.config/i3/config)
-conf_line_str="client.focused "$(echo "$current_setting" | cut -f2 -d' ')" "$(echo "$current_setting" | cut -f3 -d' ')" "$(echo "$current_setting" | cut -f4 -d' ')
 
-echo "Current setting:         " $(echo $conf_line_str)
-echo "Suggested new setting:   " $(echo $new_conf_line_str)
+echo "Current setting:         " $(echo $focused_conf_line_str)
+echo "Suggested new setting:   " $(echo $focused_new_conf_line_str)
 echo ""
 
 printf "Do you want to proceed? [y|n]  "
@@ -175,7 +175,7 @@ read y
 if [[ "$y" == "y" ]]
 then
     cp ~/.config/i3/config{,_before_autoi3background.bak}
-    sed -i "s|$conf_line_str|$new_conf_line_str|g" ~/.config/i3/config
+    sed -i "s|$focused_conf_line_str|$focused_new_conf_line_str|g" ~/.config/i3/config
     success "Configuration adjusted :)\n"
     
     printf "Do you want to restart i3? [y|n]  "

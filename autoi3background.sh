@@ -171,12 +171,18 @@ unfocused_new_conf_line_str="client.unfocused $unfocused_average $unfocused_aver
 unfocused_current_setting=$(grep -P "^client.unfocused " ~/.config/i3/config)
 unfocused_conf_line_str="client.unfocused "$(echo "$unfocused_current_setting" | cut -f2 -d' ')" "$(echo "$unfocused_current_setting" | cut -f3 -d' ')" "$(echo "$unfocused_current_setting" | cut -f4 -d' ')
 
+# focused_inactive settings
+focused_inactive_new_conf_line_str="client.focused_inactive $unfocused_average $unfocused_average $text_average"
+focused_inactive_current_setting=$(grep -P "^client.focused_inactive " ~/.config/i3/config)
+focused_inactive_conf_line_str="client.focused_inactive "$(echo "$focused_inactive_current_setting" | cut -f2 -d' ')" "$(echo "$focused_inactive_current_setting" | cut -f3 -d' ')" "$(echo "$focused_inactive_current_setting" | cut -f4 -d' ')
 
 echo "Current settings:         $focused_conf_line_str"
 echo "                          $unfocused_conf_line_str"
+echo "                          $focused_inactive_conf_line_str"
 echo ""
 echo "Suggested new settings:   $focused_new_conf_line_str"
 echo "                          $unfocused_new_conf_line_str"
+echo "                          $focused_inactive_new_conf_line_str"
 echo ""
 
 printf "Do you want to proceed? [y|n]  "
@@ -187,6 +193,7 @@ then
     cp ~/.config/i3/config{,_before_autoi3background.bak}
     sed -i "s|$focused_conf_line_str|$focused_new_conf_line_str|g" ~/.config/i3/config
     sed -i "s|$unfocused_conf_line_str|$unfocused_new_conf_line_str|g" ~/.config/i3/config
+    sed -i "s|$focused_inactive_conf_line_str|$focused_inactive_new_conf_line_str|g" ~/.config/i3/config
     success "Configuration adjusted :)\n"
     
     printf "Do you want to restart i3? [y|n]  "
